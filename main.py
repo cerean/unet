@@ -1,3 +1,5 @@
+# my changes are denoted by my initials, {AC}
+
 from model import *
 from data import *
 
@@ -11,12 +13,16 @@ data_gen_args = dict(rotation_range=0.2,
                     zoom_range=0.05,
                     horizontal_flip=True,
                     fill_mode='nearest')
-myGene = trainGenerator(2,'data/membrane/train','image','label',data_gen_args,save_to_dir = None)
+trainGen = trainGenerator(2, 'data/membrane/train', 'image', 'label', data_gen_args, save_to_dir = 'data/membrane/train/aug')
 
 model = unet()
-model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
-model.fit_generator(myGene,steps_per_epoch=300,epochs=1,callbacks=[model_checkpoint])
+model_checkpoint = ModelCheckpoint('unet_membrane.weights.hdf5', monitor='loss', verbose=1, save_best_only=True, save_weights_only=True)
 
-testGene = testGenerator("data/membrane/test")
-results = model.predict_generator(testGene,30,verbose=1)
-saveResult("data/membrane/test",results)
+# updated to model.fit() from depreciated model.fit_generator()
+model.fit(trainGenerator, steps_per_epoch=2000, epochs=1, callbacks=[model_checkpoint])
+
+testGen = testGenerator("data/membrane/test")
+
+# updated to model.predict() from depreciated model.predict_generator() {AC}
+results = model.predict(testGen, 30, verbose=1)
+saveResult("data/membrane/test/predict", results)
